@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% from "_ticket_macros.html" import ticket_search with context %}
+{% block content %}
+<section class="hero thero">
+  <div class="wrap">
+    <div class="hero-copy center-copy">
+      <span class="eyebrow">🇲🇿 {{ n_routes }} rotas · {{ operators|length }} operadores · bilhete no telemóvel</span>
+      <h1>Bilhetes de autocarro para todo Moçambique, <em>em 2 minutos.</em></h1>
+      <p class="lead">Compare horários e preços, escolha o seu lugar e pague com M-Pesa ou e-Mola. Sem filas no terminal.</p>
+    </div>
+    <div class="hero-card wide">{{ ticket_search(origins, de="Maputo", para="Beira") }}</div>
+    <div class="modes">
+      <a href="/" class="mode on">🎫 Bilhetes de autocarro</a>
+      <a href="{{ brand.sister_url }}" class="mode">🚌 Alugar autocarro inteiro ↗</a>
+      <button type="button" class="mode" data-open-chat>✨ Perguntar ao Assistente IA</button>
+    </div>
+  </div>
+  <div class="capulana" aria-hidden="true"></div>
+</section>
+
+<section class="wrap section">
+  <div class="perks">
+    <div><span>💺</span><b>Escolha o seu lugar</b><small>Janela, corredor ou junto da família — veja o mapa do autocarro.</small></div>
+    <div><span>📱</span><b>Pague no telemóvel</b><small>M-Pesa, e-Mola, mKesh ou transferência bancária.</small></div>
+    <div><span>🎫</span><b>Bilhete com QR</b><small>Mostre no telemóvel ao embarcar. Também por WhatsApp.</small></div>
+    <div><span>↩️</span><b>Cancelamento fácil</b><small>Até 24h antes recebe 90% de volta, sem ir ao balcão.</small></div>
+  </div>
+</section>
+
+{% if promos %}
+<section class="wrap">
+  <div class="offers">
+    {% for code, p in promos.items() %}
+    <div class="offer"><span class="code">{{ code }}</span><p>{{ p.label }}</p></div>
+    {% endfor %}
+    <div class="offer alt"><span class="code">GRUPOS</span><p>Mais de 15 pessoas? Alugue o autocarro inteiro na AlugaMoz e poupe. <a href="{{ brand.sister_url }}">Ver preços →</a></p></div>
+  </div>
+</section>
+{% endif %}
+
+<section class="wrap section">
+  <h2>Rotas populares</h2>
+  <p class="sub">Preço por lugar, IVA incluído. Clique para ver os horários de amanhã.</p>
+  <div class="route-grid">
+    {% for r in popular if r['from'] %}
+    <a class="route" href="/viagens?de={{ r.o|urlencode }}&para={{ r.d|urlencode }}&data={{ tomorrow }}">
+      <strong>{{ r.o }} → {{ r.d.split(' (')[0] }}</strong>
+      <span class="muted">{{ r.d.split('(')[1][:-1] if '(' in r.d else 'Moçambique' }}</span>
+      <span class="from">desde <span class="price">{{ mzn(r['from']) }}</span></span>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="occasions">
+  <div class="wrap">
+    <h2>Operadores na plataforma</h2>
+    <p class="sub light">Empresas verificadas, com avaliações de passageiros reais.</p>
+    <div class="occ-grid">
+      {% for o in operators %}
+      <div class="occ op"><strong>{{ o.name }}</strong><span>★ {{ "%.1f"|format(o.rating) }} · base em {{ o.city }} · {{ o.n }} horários</span></div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="how">
+  <div class="wrap">
+    <h2>Como comprar</h2>
+    <ol class="steps">
+      <li><b>1</b><h3>Procure a rota</h3><p>Escolha de onde parte, para onde vai e a data.</p></li>
+      <li><b>2</b><h3>Escolha o autocarro e o lugar</h3><p>Compare horário, duração, classe e preço. Escolha no mapa de lugares.</p></li>
+      <li><b>3</b><h3>Pague no telemóvel</h3><p>Os lugares ficam guardados 10 minutos enquanto paga.</p></li>
+      <li><b>4</b><h3>Embarque com o QR</h3><p>Chegue 30 min antes ao ponto de embarque e mostre o bilhete.</p></li>
+    </ol>
+  </div>
+</section>
+
+<section class="wrap section split">
+  <div class="partner-cta">
+    <h2>É operador de autocarros?</h2>
+    <p>Venda bilhetes online 24 horas por dia, receba por M-Pesa e tenha a lista de passageiros pronta para a polícia e a fronteira. Sem mensalidade.</p>
+    <a class="btn yellow big" href="/operadores">Vender bilhetes na {{ brand.name }}</a>
+  </div>
+  <div class="paygrid">
+    <div class="pay pay-mpesa"><b>M-Pesa</b><span>Vodacom · 84/85</span></div>
+    <div class="pay pay-emola"><b>e-Mola</b><span>Movitel · 86/87</span></div>
+    <div class="pay pay-mkesh"><b>mKesh</b><span>Tmcel · 82/83</span></div>
+    <div class="pay pay-transferencia"><b>Transferência</b><span>BCI · Millennium bim · Standard Bank · Absa</span></div>
+  </div>
+</section>
+
+<section class="wrap section faq" id="faq">
+  <h2>Perguntas frequentes</h2>
+  <details><summary>Preciso de imprimir o bilhete?</summary><p>Não. Mostre o QR code no telemóvel ao embarcar. Também enviamos o bilhete por WhatsApp. Sem telemóvel, basta dizer o código do bilhete e mostrar o BI.</p></details>
+  <details><summary>Quanto tempo ficam os lugares guardados?</summary><p>10 minutos enquanto paga. Se o pagamento não for concluído, os lugares voltam a ficar livres. Com transferência bancária guardamos até 24h.</p></details>
+  <details><summary>Como cancelo e quanto recebo de volta?</summary><p>Em “Os meus bilhetes”. Mais de 24h antes da partida: 90% de reembolso. Entre 6h e 24h: 50%. Menos de 6h: sem reembolso. O dinheiro volta para o mesmo número em até 48h.</p></details>
+  <details><summary>O que preciso para viajar para Joanesburgo, Nelspruit ou Eswatini?</summary><p>Passaporte válido. Pedimos o número do passaporte de cada passageiro na compra para preparar a lista da fronteira. Crianças precisam de documentos próprios.</p></details>
+  <details><summary>Quanta bagagem posso levar?</summary><p>Uma mala até 20 kg no porão e uma bolsa de mão. Bagagem extra paga-se ao operador no embarque.</p></details>
+  <details><summary>Os preços mudam no Natal?</summary><p>De 15 de Dezembro a 10 de Janeiro há um acréscimo de época festiva de 15%. Compre cedo — os autocarros esgotam.</p></details>
+</section>
+{% endblock %}

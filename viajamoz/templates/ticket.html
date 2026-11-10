@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% from "_ticket_macros.html" import duration with context %}
+{% block title %}Bilhete {{ t.pnr }} · {{ brand.name }}{% endblock %}
+{% block content %}
+{% set labels = {"confirmado": "Confirmado", "reservado": "Aguarda pagamento", "cancelado": "Cancelado", "expirado": "Expirado"} %}
+<section class="wrap booking-page">
+  <div class="ticket eticket">
+    <header>
+      <div><span class="muted">Código do bilhete</span><h1>{{ t.pnr }}</h1></div>
+      <span class="status st-{{ t.status }}">{{ labels.get(t.status, t.status) }}</span>
+    </header>
+
+    <div class="trip-times big">
+      <div><b>{{ trip.depart }}</b><small>{{ trip.origin }}<br>{{ depart.strftime('%d/%m/%Y') }}</small></div>
+      <div class="dur"><span>{{ duration(trip.duration_min) }}</span></div>
+      <div><b>{{ arrive.strftime('%H:%M') }}</b><small>{{ trip.destination }}<br>{{ arrive.strftime('%d/%m/%Y') }}</small></div>
+    </div>
+
+    {% if t.status == 'confirmado' %}
+    <div class="track track-{{ track.state }}">
+      <div class="track-bar"><span style="width: {{ track.pct }}%"></span></div>
+      <p>{{ track.text }} <small class="muted">(estimativa pelo horário)</small></p>
+    </div>
+    {% endif %}
+
+    <div class="ticket-grid">
+      <div class="qr">{% if t.status == 'confirmado' %}{{ qr|safe }}<small>Mostre ao embarcar</small>{% else %}<div class="qr-off">QR disponível após pagamento</div>{% endif %}</div>
+      <dl>
+        <dt>Operador</dt><dd>{{ trip.operator }} · {{ bc.name }}</dd>
+        <dt>Embarque</dt><dd>{{ t.boarding }} — chegue até às {{ report.strftime('%H:%M') }}</dd>
+        <dt>Desembarque</dt><dd>{{ t.dropping }}</dd>
+        <dt>Passageiros</dt><dd>{% for s in seats %}Lugar <b>{{ s.seat }}</b> · {{ s.passenger or '—' }}{% if s.age %} ({{ s.age }}){% endif %}<br>{% endfor %}</dd>
+        <dt>Total pago</dt><dd>{{ mzn(t.amount) }}{% if t.discount %} <small class="muted">(desconto {{ t.promo }}: −{{ mzn(t.discount) }})</small>{% endif %}</dd>
+        {% if t.status == 'cancelado' and t.refund %}<dt>Reembolso</dt><dd>{{ mzn(t.refund) }}</dd>{% endif %}
+        {% if t.boarded_at %}<dt>Embarque registado</dt><dd>{{ t.boarded_at[11:16] }} ✔</dd>{% endif %}
+      </dl>
+    </div>
+
+    {% if t.status == 'reservado' %}
+      <p class="flash">Aguardamos a confirmação do pagamento{% if t.payment_method == 'transferencia' %} por transferência. Envie o comprovativo por WhatsApp com o código {{ t.pnr }}{% endif %}.</p>
+      {% if t.payment_method != 'transferencia' %}<a class="btn primary" href="/pagamento/{{ t.pnr }}">Concluir pagamento</a>{% endif %}
+    {% endif %}
+
+    <div class="ticket-actions">
+      {% if t.status == 'confirmado' %}
+      <a class="btn wa" target="_blank" rel="noopener" href="https://wa.me/?text={{ ('Bilhete ' ~ brand.name ~ ' ' ~ t.pnr ~ ': ' ~ trip.origin ~ ' → ' ~ trip.destination ~ ', ' ~ depart.strftime('%d/%m/%Y') ~ ' às ' ~ trip.depart ~ ', ' ~ trip.operator ~ ', lugar(es) ' ~ (seats|map(attribute='seat')|join(', ')) ~ '. Embarque: ' ~ t.boarding)|urlencode }}">Enviar por WhatsApp</a>
+      {% endif %}
+      <a class="btn ghost" href="tel:{{ trip.operator_phone }}">Ligar ao operador</a>
+      <a class="btn ghost" href="/">Nova viagem</a>
+    </div>
+
+    {% if refund %}
+    <details class="cancel">
+      <summary>Cancelar bilhete</summary>
+      <p>{{ refund[2] }} Se cancelar agora recebe <b>{{ mzn(refund[0]) }}</b> no número usado no pagamento.</p>
+      <form method="post" action="/bilhete/{{ t.pnr }}/cancelar">
+        <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+        <label class="confirm"><input type="checkbox" required> Confirmo que quero cancelar {{ seats|length }} lugar(es)</label>
+        <button class="btn danger" type="submit">Cancelar bilhete</button>
+      </form>
+    </details>
+    {% endif %}
+    <p class="muted small">Bagagem: 1 mala até 20 kg + 1 bolsa de mão. Leve o BI{{ ' e o passaporte' if '(' in trip.destination or '(' in trip.origin }}.</p>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,5 @@
+flask>=3.0
+segno>=1.6       # QR codes on tickets
+anthropic>=0.70
+cryptography>=42  # only needed for live M-Pesa
+gunicorn>=22      # production server

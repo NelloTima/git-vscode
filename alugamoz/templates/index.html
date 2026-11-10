@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% from "_macros.html" import vehicle_art, search_form with context %}
+{% block content %}
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div class="hero-copy">
+      <span class="eyebrow">🇲🇿 De Maputo a Pemba · motorista incluído</span>
+      <h1>Alugue um autocarro inteiro para o seu grupo, <em>com preço na hora.</em></h1>
+      <p class="lead">Casamentos, lobolos, excursões, igrejas, funerais, staff de empresa ou férias no Tofo. Compare viaturas verificadas, reserve online e pague o sinal com M-Pesa ou e-Mola.</p>
+      <ul class="trust">
+        <li>✔ Preço final com combustível, motorista e IVA</li>
+        <li>✔ Parceiros e viaturas verificados</li>
+        <li>✔ Apoio por WhatsApp 7 dias por semana</li>
+      </ul>
+    </div>
+    <div class="hero-card">
+      {{ search_form() }}
+      <p class="hint">Não sabe o que precisa? <button type="button" class="linkish" data-open-chat>Pergunte ao Assistente IA</button></p>
+    </div>
+  </div>
+  <div class="capulana" aria-hidden="true"></div>
+</section>
+
+<section class="stats wrap">
+  <div><strong>{{ stats.partners }}+</strong><span>parceiros verificados</span></div>
+  <div><strong>{{ stats.vehicles }}+</strong><span>viaturas activas</span></div>
+  <div><strong>{{ stats.cities }}</strong><span>cidades com frota</span></div>
+  <div><strong>11</strong><span>províncias cobertas</span></div>
+</section>
+
+<section id="categorias" class="wrap section">
+  <h2>Escolha a viatura certa para o seu grupo</h2>
+  <p class="sub">Todas com motorista profissional. O sistema recomenda a categoria pelo número de passageiros.</p>
+  <div class="cat-grid">
+    {% for c in categories.values() %}
+    <a class="cat-card" href="/pesquisa?origem=Maputo&tipo=local&horas=8&categoria={{ c.slug }}&passageiros={{ c.seats }}">
+      {{ vehicle_art(c.slug) }}
+      <h3>{{ c.name }}</h3>
+      <p class="muted">{{ c.examples }}</p>
+      <p>{{ c.ideal_for }}</p>
+      <div class="cat-meta"><span>👥 até {{ c.seats }}</span><span>desde <b>{{ mzn(c.per_km) }}</b>/km</span></div>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="occasions">
+  <div class="wrap">
+    <h2>Para cada ocasião</h2>
+    <div class="occ-grid">
+      {% for icon, title, text, pax, cat in [
+        ("💍","Casamento & Lobolo","Carro dos noivos decorado e autocarros para os convidados.",60,"autocarro"),
+        ("⛪","Igreja & Culto","Transporte de fiéis para cultos, retiros e conferências.",30,"coaster"),
+        ("🎓","Excursões escolares","Viaturas com cintos, motoristas experientes e seguro.",60,"autocarro"),
+        ("🏭","Staff de empresas","Contratos mensais para minas, fábricas e projectos de gás.",50,"autocarro"),
+        ("🏖️","Turismo & Férias","Tofo, Bilene, Ponta do Ouro, Vilankulo, Gorongosa.",15,"minibus"),
+        ("✈️","Transfer de aeroporto","Recepção com placa, voo monitorizado, sem stress.",4,"executivo"),
+        ("🕊️","Funerais","Transporte digno e pontual para família e acompanhantes.",30,"coaster"),
+        ("🌍","Viagens regionais","Nelspruit, Joanesburgo, Eswatini, Malawi e Zimbabwe.",15,"minibus")] %}
+      <a class="occ" href="/pesquisa?origem=Maputo&tipo=local&horas=8&passageiros={{ pax }}&categoria={{ cat }}&ocasiao={{ title|urlencode }}">
+        <span class="occ-icon">{{ icon }}</span><strong>{{ title }}</strong><span>{{ text }}</span>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section id="rotas" class="wrap section">
+  <h2>Rotas populares</h2>
+  <p class="sub">Preços estimados com IVA. O valor final depende da data e das paragens.</p>
+  <div class="route-grid">
+    {% for r in routes %}
+    <a class="route" href="/pesquisa?origem={{ r.origin|urlencode }}&destino={{ r.destination|urlencode }}&tipo={{ r.tipo }}&passageiros={{ r.pax }}{% if r.tipo == 'local' %}&horas=10{% endif %}">
+      <span class="route-label">{{ r.label }}</span>
+      <strong>{{ r.origin }} {% if r.tipo != 'local' %}⇄ {{ r.destination.split(' (')[0] }}{% else %}· dia inteiro{% endif %}</strong>
+      <span class="muted">{{ r.pax }} pessoas · {{ r.q.category_name }}{% if r.q.km %} · {{ r.q.km }} km{% endif %}</span>
+      <span class="price">{{ mzn(r.q.total) }}</span>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="how">
+  <div class="wrap">
+    <h2>Reservar é simples</h2>
+    <ol class="steps">
+      <li><b>1</b><h3>Diga para onde vai</h3><p>Origem, destino, data e número de pessoas — ou fale com o assistente IA.</p></li>
+      <li><b>2</b><h3>Compare e escolha</h3><p>Veja viaturas reais perto de si, com fotos, avaliações e preço final.</p></li>
+      <li><b>3</b><h3>Pague 30% de sinal</h3><p>M-Pesa, e-Mola, mKesh ou transferência. Recebe a confirmação na hora.</p></li>
+      <li><b>4</b><h3>Boa viagem!</h3><p>Recebe nome e contacto do motorista 24h antes. Acompanhe pelo site.</p></li>
+    </ol>
+  </div>
+</section>
+
+<section class="wrap section split">
+  <div>
+    <h2>Pagamentos que os moçambicanos usam</h2>
+    <p class="sub">Pague o sinal no telemóvel em segundos. O restante paga-se até ao dia da viagem.</p>
+    <div class="paygrid">
+      <div class="pay pay-mpesa"><b>M-Pesa</b><span>Vodacom · 84/85</span></div>
+      <div class="pay pay-emola"><b>e-Mola</b><span>Movitel · 86/87</span></div>
+      <div class="pay pay-mkesh"><b>mKesh</b><span>Tmcel · 82/83</span></div>
+      <div class="pay pay-transferencia"><b>Transferência</b><span>BCI · Millennium bim · Standard Bank · Absa</span></div>
+    </div>
+  </div>
+  <div class="partner-cta">
+    <h2>Tem viaturas? Ganhe mais com elas.</h2>
+    <p>Registe a sua frota de minibuses, Coasters, autocarros ou 4x4 e receba pedidos de clientes de todo o país. Sem mensalidade — só uma comissão por viagem realizada.</p>
+    <a class="btn yellow big" href="/parceiros">Registar a minha frota</a>
+  </div>
+</section>
+
+{# PLACEHOLDER reviews for the demo — replace with real, verified customer reviews before launch. #}
+<section class="wrap section">
+  <h2>O que dizem os clientes</h2>
+  <div class="reviews">
+    <blockquote><p>“Alugámos dois autocarros para o lobolo em Xai-Xai. Chegaram a horas e o preço foi exactamente o do site.”</p><cite>— Cliente, Matola</cite></blockquote>
+    <blockquote><p>“Transporte diário de 120 trabalhadores em Tete. A facturação mensal com NUIT facilita tudo.”</p><cite>— Gestora de logística, Tete</cite></blockquote>
+    <blockquote><p>“Pedi pelo assistente à noite, paguei o sinal por M-Pesa e no dia seguinte tinha o motorista confirmado.”</p><cite>— Cliente, Beira</cite></blockquote>
+  </div>
+</section>
+
+<section class="wrap section faq">
+  <h2>Perguntas frequentes</h2>
+  <details><summary>O preço inclui combustível e motorista?</summary><p>Sim. O preço final inclui motorista, combustível, portagens dentro de Moçambique e IVA de 16%. Para viagens de vários dias inclui o subsídio de pernoita do motorista.</p></details>
+  <details><summary>Quanto tenho de pagar para confirmar?</summary><p>Um sinal de 30% por M-Pesa, e-Mola, mKesh ou transferência. O restante paga-se até ao dia da viagem.</p></details>
+  <details><summary>Posso cancelar?</summary><p>Cancelamento grátis até 72 horas antes. Entre 72h e 24h devolvemos 50% do sinal. Com menos de 24h o sinal não é devolvido.</p></details>
+  <details><summary>Fazem viagens para a África do Sul ou Eswatini?</summary><p>Sim. Tratamos da documentação da viatura. Os passageiros precisam de passaporte válido e enviamos a lista à fronteira 72 horas antes.</p></details>
+  <details><summary>Emitem factura para empresas?</summary><p>Sim, factura com NUIT e contratos mensais para transporte de trabalhadores. Veja <a href="/empresas">Contas empresariais</a>.</p></details>
+</section>
+{% endblock %}

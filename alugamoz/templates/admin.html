@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Painel · {{ brand.name }}{% endblock %}
+{% block content %}
+<section class="wrap section admin">
+  <div class="admin-head">
+    <h1>Painel de alugueres</h1>
+    <form method="post" action="/admin/sair"><input type="hidden" name="csrf" value="{{ csrf_token() }}"><button class="btn ghost small">Sair</button></form>
+  </div>
+  <div class="stats">
+    <div><strong>{{ kpi.n }}</strong><span>reservas</span></div>
+    <div><strong>{{ kpi.pending or 0 }}</strong><span>pendentes</span></div>
+    <div><strong>{{ mzn(kpi.gmv) }}</strong><span>valor reservado</span></div>
+    <div><strong>{{ mzn(kpi.paid) }}</strong><span>sinais recebidos</span></div>
+  </div>
+
+  <h2>Reservas</h2>
+  <div class="filters">
+    <a class="chip {{ 'on' if not current }}" href="/admin">Todas</a>
+    {% for s in statuses %}<a class="chip {{ 'on' if current == s }}" href="/admin?estado={{ s }}">{{ status_labels[s] }}</a>{% endfor %}
+  </div>
+  <div class="table-wrap">
+  <table class="grid">
+    <thead><tr><th>Ref.</th><th>Cliente</th><th>Rota</th><th>Data</th><th>Pax</th><th>Viatura</th><th>Total</th><th>Pagamento</th><th>Estado</th></tr></thead>
+    <tbody>
+    {% for b in bookings %}
+      <tr>
+        <td><a href="/reserva/{{ b.ref }}">{{ b.ref }}</a><br><small class="muted">{{ b.created_at[:16]|replace('T',' ') }}</small></td>
+        <td>{{ b.customer_name }}<br><a href="https://wa.me/{{ b.phone|replace('+','') }}" target="_blank" rel="noopener">{{ b.phone }}</a></td>
+        <td>{{ b.origin }}{% if b.trip_type != 'local' %} → {{ b.destination }}{% endif %}<br><small class="muted">{{ trip_types[b.trip_type] }}{% if b.occasion %} · {{ b.occasion }}{% endif %}</small></td>
+        <td>{{ b.start_date }} {{ b.pickup_time or '' }}</td>
+        <td>{{ b.passengers }}</td>
+        <td>{{ b.title }}{% if b.vehicles > 1 %} ×{{ b.vehicles }}{% endif %}</td>
+        <td>{{ mzn(b.total) }}</td>
+        <td>
+          <form method="post" action="/admin/reserva/{{ b.ref }}?estado={{ current }}" class="inline">
+            <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+            <select name="pagamento_estado" onchange="this.form.submit()">
+              {% for s in ['pendente','sinal_pago','pago_total','reembolsado'] %}<option value="{{ s }}" {{ 'selected' if b.payment_status == s }}>{{ s|replace('_',' ') }}</option>{% endfor %}
+            </select><br><small class="muted">{{ pay_methods[b.payment_method].name if b.payment_method in pay_methods else '' }}</small>
+          </form>
+        </td>
+        <td>
+          <form method="post" action="/admin/reserva/{{ b.ref }}?estado={{ current }}" class="inline">
+            <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+            <select name="estado" onchange="this.form.submit()" class="st-{{ b.status }}">
+              {% for s in statuses %}<option value="{{ s }}" {{ 'selected' if b.status == s }}>{{ status_labels[s] }}</option>{% endfor %}
+            </select>
+          </form>
+        </td>
+      </tr>
+    {% else %}<tr><td colspan="9" class="muted">Sem reservas.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+  </div>
+
+  <div class="split">
+    <div>
+      <h2>Parceiros por aprovar</h2>
+      {% for p in partners_pending %}
+        <div class="card row">
+          <div><b>{{ p.company }}</b> · {{ p.city }} · {{ p.fleet_size }} viaturas<br><small class="muted">{{ p.contact_name }} · {{ p.phone }} · NUIT {{ p.nuit or '—' }} · {{ p.categories }}</small></div>
+          <form method="post" action="/admin/parceiro/{{ p.id }}" class="inline">
+            <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+            <button class="btn small primary" name="estado" value="aprovado">Aprovar</button>
+            <button class="btn small ghost" name="estado" value="rejeitado">Rejeitar</button>
+          </form>
+        </div>
+      {% else %}<p class="muted">Nenhum pedido pendente.</p>{% endfor %}
+    </div>
+    <div>
+      <h2>Contactos do Assistente IA</h2>
+      {% for l in leads %}
+        <div class="card"><b>{{ l.name }}</b> · <a href="https://wa.me/{{ l.phone|replace('+','') }}" target="_blank" rel="noopener">{{ l.phone }}</a><br><small class="muted">{{ l.created_at[:16]|replace('T',' ') }}</small><p>{{ l.summary }}</p></div>
+      {% else %}<p class="muted">Ainda sem contactos.</p>{% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

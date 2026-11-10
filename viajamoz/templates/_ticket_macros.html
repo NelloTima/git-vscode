@@ -1,0 +1,24 @@
+{% macro ticket_search(origins, de="Maputo", para="", data=None, compact=False) -%}
+<form class="tsearch {{ 'compact' if compact }}" action="/viagens" method="get">
+  <div class="tfields">
+    <label class="f"><span>De</span>
+      <input list="tlocs" name="de" required value="{{ de }}" placeholder="Cidade de partida" autocomplete="off"></label>
+    <button type="button" class="swap" aria-label="Trocar origem e destino" data-swap>⇄</button>
+    <label class="f"><span>Para</span>
+      <input list="tlocs" name="para" required value="{{ para }}" placeholder="Destino" autocomplete="off"></label>
+    <label class="f"><span>Data da viagem</span>
+      <input type="date" name="data" required min="{{ today }}" value="{{ data or today }}"></label>
+    <button class="btn primary big" type="submit">Procurar autocarros</button>
+  </div>
+  {% if not compact %}
+  <div class="quickdates">
+    <button type="button" class="chip" data-date="0">Hoje</button>
+    <button type="button" class="chip" data-date="1">Amanhã</button>
+    <button type="button" class="chip" data-date="weekend">Este fim-de-semana</button>
+  </div>
+  {% endif %}
+  <datalist id="tlocs">{% for l in origins %}<option value="{{ l }}">{% endfor %}</datalist>
+</form>
+{%- endmacro %}
+
+{% macro duration(mins) -%}{{ mins // 60 }}h{% if mins % 60 %}{{ "%02d"|format(mins % 60) }}{% endif %}{%- endmacro %}

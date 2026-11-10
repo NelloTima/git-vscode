@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="pt-MZ">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}{{ brand.name }} — {{ brand.tagline }}{% endblock %}</title>
+<meta name="description" content="{% block description %}{{ brand.tagline }}{% endblock %}">
+<meta name="theme-color" content="{{ brand.color }}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('shared.static', filename='core.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap nav">
+    <a href="/" class="logo" aria-label="{{ brand.name }} início">{% block logo %}{% endblock %}<span>{{ brand.name }}</span></a>
+    <input type="checkbox" id="menu" hidden><label for="menu" class="burger" aria-label="Menu">☰</label>
+    <nav class="links">
+      {% block nav %}{% endblock %}
+      <a class="btn small wa" href="https://wa.me/{{ brand.whatsapp }}" target="_blank" rel="noopener">WhatsApp</a>
+    </nav>
+  </div>
+</header>
+
+{% with msgs = get_flashed_messages(with_categories=true) %}
+  {% if msgs %}<div class="wrap flashes">{% for cat, m in msgs %}<div class="flash {{ cat }}">{{ m }}</div>{% endfor %}</div>{% endif %}
+{% endwith %}
+
+<main>{% block content %}{% endblock %}</main>
+
+<footer class="footer">
+  <div class="wrap cols">
+    <div>
+      <strong class="logo-text">{{ brand.name }}</strong>
+      <p>{{ brand.tagline }}.</p>
+      <p class="muted">Apoio 7 dias: {{ brand.phone }} · {{ brand.email }}</p>
+      <p class="sister">{{ brand.sister_pitch }} <a href="{{ brand.sister_url }}">{{ brand.sister_name }} →</a></p>
+    </div>
+    {% block footer_cols %}{% endblock %}
+    <div><h4>Pagamentos</h4><div class="paychips">{% for k, m in pay_methods.items() if k != 'numerario' %}<span class="chip pay-{{ k }}">{{ m.name }}</span>{% endfor %}</div>
+      <h4>Empresa</h4>{% block footer_company %}{% endblock %}<a href="/admin">Área de gestão</a></div>
+  </div>
+  <div class="wrap legal muted">© {{ today[:4] }} {{ brand.name }} · Preços em Meticais (MT) com IVA 16% · Feito em Moçambique 🇲🇿</div>
+</footer>
+
+<a class="wa-float" href="https://wa.me/{{ brand.whatsapp }}?text={{ brand.whatsapp_text|urlencode }}" target="_blank" rel="noopener" aria-label="Falar no WhatsApp">
+  <svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true"><path fill="#fff" d="M16 3a13 13 0 0 0-11.2 19.6L3 29l6.6-1.7A13 13 0 1 0 16 3zm0 23.6c-2 0-3.9-.5-5.6-1.5l-.4-.2-3.9 1 1-3.8-.3-.4A10.6 10.6 0 1 1 16 26.6zm5.8-7.9c-.3-.2-1.9-.9-2.2-1-.3-.1-.5-.2-.7.2l-1 1.2c-.2.2-.4.2-.7.1a8.7 8.7 0 0 1-4.3-3.8c-.3-.6.3-.5.9-1.7.1-.2 0-.4 0-.5l-1-2.4c-.3-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.1 3.2 5.1 4.5 1.9.8 2.6.9 3.6.7.6-.1 1.9-.8 2.1-1.5.3-.7.3-1.3.2-1.5l-.6-.3z"/></svg>
+</a>
+
+<div id="chat" class="chat" data-ai="{{ 1 if ai_on else 0 }}">
+  <button class="chat-toggle" type="button" aria-expanded="false" aria-controls="chatPanel">
+    <span class="dot"></span> Assistente IA <small>{% block chat_hint %}resposta em segundos{% endblock %}</small>
+  </button>
+  <section id="chatPanel" class="chat-panel" hidden>
+    <header><strong>Assistente {{ brand.name }}</strong><span class="muted">Responde em português ou inglês</span>
+      <button type="button" class="chat-close" aria-label="Fechar">×</button></header>
+    <div class="chat-log" aria-live="polite">
+      {% block chat_intro %}{% endblock %}
+    </div>
+    <form class="chat-form"><input name="m" autocomplete="off" placeholder="Escreva aqui…" maxlength="2000" required><button class="btn primary" type="submit">Enviar</button></form>
+  </section>
+</div>
+
+<script src="{{ url_for('shared.static', filename='app.js') }}" defer></script>
+</body>
+</html>

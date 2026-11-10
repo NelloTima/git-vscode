@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% from "_macros.html" import vehicle_art, stars, search_form with context %}
+{% block title %}{{ p.origin }}{% if p.tipo != 'local' %} → {{ p.destination }}{% endif %} · {{ brand.name }}{% endblock %}
+{% block content %}
+<section class="searchbar">
+  <div class="wrap">{{ search_form(p, compact=True) }}</div>
+</section>
+
+<section class="wrap results-layout">
+  <aside class="summary">
+    <h2>A sua viagem</h2>
+    <dl>
+      <dt>Rota</dt><dd>{{ p.origin }}{% if p.tipo != 'local' %} → {{ p.destination }}{% endif %}</dd>
+      <dt>Tipo</dt><dd>{{ trip_types[p.tipo] }}{% if p.tipo == 'local' %} · {{ p.hours }}h{% endif %}</dd>
+      <dt>Data</dt><dd>{{ p.start.strftime('%d/%m/%Y') }}{% if p.end %} – {{ p.end.strftime('%d/%m/%Y') }}{% endif %}</dd>
+      <dt>Passageiros</dt><dd>{{ p.pax }}</dd>
+      {% if p.occasion %}<dt>Ocasião</dt><dd>{{ p.occasion }}</dd>{% endif %}
+    </dl>
+    <div class="reco">💡 Para <b>{{ p.pax }}</b> pessoas recomendamos <b>{{ categories[recommended].name }}</b>.</div>
+    <h3>Filtrar por categoria</h3>
+    <div class="filters">
+      {% set base = '/pesquisa?origem=' ~ (p.origin|urlencode) ~ '&destino=' ~ ((p.destination or '')|urlencode) ~ '&tipo=' ~ p.tipo ~ '&passageiros=' ~ p.pax ~ '&horas=' ~ p.hours ~ '&data=' ~ p.start ~ ('&data_fim=' ~ p.end if p.end else '') %}
+      <a class="chip {{ 'on' if not p.category }}" href="{{ base }}">Todas</a>
+      {% for c in categories.values() %}
+        <a class="chip {{ 'on' if p.category == c.slug }}" href="{{ base }}&categoria={{ c.slug }}">{{ c.name }}</a>
+      {% endfor %}
+    </div>
+  </aside>
+
+  <div class="results">
+    <h1 class="results-title">{{ results|length }} viatura(s) disponíve{{ 'l' if results|length == 1 else 'is' }}</h1>
+    {% for r in results %}{% set v, q = r.v, r.q %}
+    <article class="result {{ 'best' if loop.first }}">
+      {% if loop.first %}<span class="badge">Melhor escolha</span>{% endif %}
+      <div class="result-art">{{ vehicle_art(v.category) }}</div>
+      <div class="result-body">
+        <h3><a href="/veiculo/{{ v.id }}?{{ request.query_string.decode() }}">{{ v.title }}</a></h3>
+        <p class="muted">{{ categories[v.category].name }} · {{ v.seats }} lugares · {{ v.year }} · {{ v.company }}</p>
+        <p class="feats">{% for f in (v.features or '').split(',') if f %}<span>{{ f }}</span>{% endfor %}</p>
+        <p class="meta">{{ stars(v.rating) }} · {{ v.trips }} viagens · 📍 {{ v.city }}{% if v.distance_km > 60 %} <span class="warn">(a {{ v.distance_km }} km da partida)</span>{% endif %}</p>
+        {% if q.vehicles > 1 %}<p class="multi">🚌 {{ q.vehicles }} viaturas para {{ q.passengers }} passageiros</p>{% endif %}
+      </div>
+      <div class="result-price">
+        <span class="price">{{ mzn(q.total) }}</span>
+        <span class="muted">{% if q.km %}{{ q.km }} km · {% endif %}{{ q.days }} dia(s) · IVA incl.</span>
+        <span class="deposit">Sinal: {{ mzn(q.deposit) }}</span>
+        <a class="btn primary" href="/veiculo/{{ v.id }}?{{ request.query_string.decode() }}">Reservar</a>
+      </div>
+    </article>
+    {% else %}
+    <div class="empty">
+      <h3>Ainda não temos viaturas desta categoria perto de {{ p.origin }}.</h3>
+      <p>Fale connosco: arranjamos uma viatura parceira em menos de 2 horas.</p>
+      <a class="btn wa" href="https://wa.me/{{ brand.whatsapp }}?text={{ ('Olá, preciso de transporte de ' ~ p.origin ~ ' para ' ~ (p.destination or '') ~ ' para ' ~ p.pax ~ ' pessoas em ' ~ p.start.strftime('%d/%m/%Y'))|urlencode }}" target="_blank" rel="noopener">Pedir no WhatsApp</a>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

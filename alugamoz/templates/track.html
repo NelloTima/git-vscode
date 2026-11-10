@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}A minha reserva · {{ brand.name }}{% endblock %}
+{% block content %}
+<section class="wrap narrow section">
+  <h1>A minha reserva</h1>
+  <p class="sub">Introduza a referência (ex.: AM-7K3Q9P) e o telemóvel usado na reserva.</p>
+  <form class="card form" method="get" action="/reserva">
+    <label class="f"><span>Referência</span><input name="ref" required value="{{ request.args.get('ref','') }}" placeholder="AM-XXXXXX" style="text-transform:uppercase"></label>
+    <label class="f"><span>Telemóvel</span><input name="telefone" required inputmode="tel" placeholder="84 123 4567"></label>
+    <button class="btn primary big full" type="submit">Ver reserva</button>
+  </form>
+</section>
+{% endblock %}

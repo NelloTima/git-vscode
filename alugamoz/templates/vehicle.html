@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% from "_macros.html" import vehicle_art, stars with context %}
+{% block title %}{{ v.title }} · {{ brand.name }}{% endblock %}
+{% block content %}
+<section class="wrap vehicle-page">
+  <a class="back" href="javascript:history.back()">← Voltar aos resultados</a>
+  <div class="vehicle-grid">
+    <div>
+      <div class="vehicle-hero">{{ vehicle_art(v.category, "art big") }}</div>
+      <h1>{{ v.title }}</h1>
+      <p class="muted">{{ categories[v.category].name }} · {{ v.seats }} lugares · Ano {{ v.year }} · Matrícula {{ v.plate }}</p>
+      <p class="meta">{{ stars(v.rating) }} · {{ v.trips }} viagens · 📍 Base em {{ v.city }} · Operado por <b>{{ v.company }}</b></p>
+      <h2>Inclui</h2>
+      <ul class="incl">
+        <li>👨‍✈️ Motorista profissional com carta profissional</li>
+        <li>⛽ Combustível e portagens em Moçambique</li>
+        <li>🛡️ Seguro de passageiros</li>
+        {% for f in (v.features or '').split(',') if f %}<li>✔ {{ f }}</li>{% endfor %}
+      </ul>
+      <h2>Detalhe do preço</h2>
+      <table class="breakdown">
+        <tr><td>{{ q.vehicles }}× {{ q.category_name }}{% if q.km %} · {{ q.km }} km{% endif %}{% if q.hours %} · {{ q.hours }}h{% endif %}</td><td>{{ mzn(q.base) }}</td></tr>
+        {% if q.driver_allowance %}<tr><td>Pernoita do motorista</td><td>{{ mzn(q.driver_allowance) }}</td></tr>{% endif %}
+        {% if q.border_fee %}<tr><td>Documentação de fronteira</td><td>{{ mzn(q.border_fee) }}</td></tr>{% endif %}
+        <tr><td>IVA (16%)</td><td>{{ mzn(q.iva) }}</td></tr>
+        <tr class="total"><td>Total</td><td>{{ mzn(q.total) }}</td></tr>
+        <tr class="dep"><td>Sinal para confirmar (30%)</td><td>{{ mzn(q.deposit) }}</td></tr>
+      </table>
+      <ul class="notes">{% for n in q.notes %}<li>{{ n }}</li>{% endfor %}</ul>
+    </div>
+
+    <form class="book-card" method="post" action="/reservar" id="bookForm">
+      <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+      <input type="hidden" name="vehicle_id" value="{{ v.id }}">
+      <h2>Reservar</h2>
+      <div class="price-live"><span class="price" id="livePrice">{{ mzn(q.total) }}</span><span class="muted" id="liveDeposit">Sinal {{ mzn(q.deposit) }}</span></div>
+      <input type="hidden" name="categoria" value="{{ v.category }}">
+      <div class="row2">
+        <label class="f"><span>Tipo</span><select name="tipo">{% for k, l in trip_types.items() %}<option value="{{ k }}" {{ 'selected' if p.tipo == k }}>{{ l }}</option>{% endfor %}</select></label>
+        <label class="f"><span>Passageiros</span><input type="number" name="passageiros" min="1" max="500" value="{{ p.pax }}" required></label>
+      </div>
+      <label class="f"><span>Partida</span><input list="locs2" name="origem" value="{{ p.origin }}" required></label>
+      <label class="f dest"><span>Destino</span><input list="locs2" name="destino" value="{{ p.destination }}"></label>
+      <label class="f hours"><span>Horas</span><input type="number" name="horas" min="4" max="72" value="{{ p.hours }}"></label>
+      <datalist id="locs2">{% for l in locations %}<option value="{{ l }}">{% endfor %}</datalist>
+      <div class="row2">
+        <label class="f"><span>Data</span><input type="date" name="data" min="{{ today }}" value="{{ p.start }}" required></label>
+        <label class="f"><span>Hora de recolha</span><input type="time" name="hora" value="07:00"></label>
+      </div>
+      <label class="f ret"><span>Data de regresso</span><input type="date" name="data_fim" min="{{ today }}" value="{{ p.end or '' }}"></label>
+      <label class="f"><span>Endereço de recolha</span><input name="endereco" placeholder="Ex.: Av. Julius Nyerere, Polana" maxlength="300"></label>
+      <label class="f"><span>Ocasião</span><select name="ocasiao"><option value="">—</option>{% for o in occasions %}<option {{ 'selected' if p.occasion == o }}>{{ o }}</option>{% endfor %}</select></label>
+      <hr>
+      <label class="f"><span>Nome completo</span><input name="nome" required minlength="3" maxlength="120" autocomplete="name"></label>
+      <label class="f"><span>Telemóvel</span><input name="telefone" required inputmode="tel" placeholder="84 123 4567" pattern="(\+?258)?\s?8[2-7][\s\d]{7,10}" autocomplete="tel"></label>
+      <label class="f"><span>Email (opcional)</span><input type="email" name="email" autocomplete="email"></label>
+      <label class="f"><span>Notas para o motorista</span><textarea name="notas" rows="2" maxlength="1000" placeholder="Paragens, bagagem, decoração…"></textarea></label>
+      <fieldset class="paypick"><legend>Pagar o sinal com</legend>
+        {% for k, m in pay_methods.items() if k != 'numerario' %}
+          <label class="payopt pay-{{ k }}"><input type="radio" name="pagamento" value="{{ k }}" {{ 'checked' if loop.first }}><b>{{ m.name }}</b><small>{{ m.operator }}</small></label>
+        {% endfor %}
+      </fieldset>
+      <label class="f paynum"><span>Número para pagamento (se diferente)</span><input name="telefone_pagamento" inputmode="tel" placeholder="Usa o telemóvel acima"></label>
+      <button class="btn primary big full" type="submit">Confirmar e pagar sinal</button>
+      <p class="muted small">Cancelamento grátis até 72h antes. Ao reservar aceita os termos de serviço.</p>
+    </form>
+  </div>
+</section>
+{% endblock %}

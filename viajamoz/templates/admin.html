@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Painel · {{ brand.name }}{% endblock %}
+{% block content %}
+<section class="wrap section admin">
+  <div class="admin-head">
+    <h1>Painel de bilhetes</h1>
+    <form method="post" action="/admin/sair"><input type="hidden" name="csrf" value="{{ csrf_token() }}"><button class="btn ghost small">Sair</button></form>
+  </div>
+  <div class="stats">
+    <div><strong>{{ kpi.n }}</strong><span>bilhetes confirmados</span></div>
+    <div><strong>{{ kpi.seats }}</strong><span>lugares vendidos</span></div>
+    <div><strong>{{ mzn(kpi.revenue) }}</strong><span>vendas</span></div>
+    <div><strong>{{ departures|length }}</strong><span>partidas com passageiros</span></div>
+  </div>
+
+  <h2>Próximas partidas</h2>
+  <div class="table-wrap">
+  <table class="grid">
+    <thead><tr><th>Data</th><th>Hora</th><th>Rota</th><th>Operador</th><th>Lugares vendidos</th><th></th></tr></thead>
+    <tbody>
+    {% for d in departures %}
+      <tr><td>{{ d.travel_date }}</td><td>{{ d.depart }}</td><td>{{ d.origin }} → {{ d.destination }}</td><td>{{ d.operator }}</td><td>{{ d.sold }}</td>
+        <td><a class="btn small ghost" href="/admin/manifesto/{{ d.trip_id }}/{{ d.travel_date }}">Lista de passageiros</a></td></tr>
+    {% else %}<tr><td colspan="6" class="muted">Sem partidas com bilhetes vendidos.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+  </div>
+
+  <h2>Últimos bilhetes</h2>
+  <div class="table-wrap">
+  <table class="grid">
+    <thead><tr><th>Código</th><th>Viagem</th><th>Lugares</th><th>Cliente</th><th>Valor</th><th>Pagamento</th><th>Estado</th></tr></thead>
+    <tbody>
+    {% for k in tix %}
+      <tr>
+        <td><a href="/bilhete/{{ k.pnr }}">{{ k.pnr }}</a><br><small class="muted">{{ k.created_at[:16]|replace('T',' ') }}</small></td>
+        <td>{{ k.origin }} → {{ k.destination }}<br><small class="muted">{{ k.travel_date }} {{ k.depart }} · {{ k.operator }}</small></td>
+        <td>{{ k.seat_list }}</td>
+        <td>{{ k.contact_name or '—' }}<br>{% if k.phone %}<a href="https://wa.me/{{ k.phone|replace('+','') }}" target="_blank" rel="noopener">{{ k.phone }}</a>{% endif %}</td>
+        <td>{{ mzn(k.amount) }}{% if k.refund %}<br><small class="muted">reembolso {{ mzn(k.refund) }}</small>{% endif %}</td>
+        <td>{{ pay_methods[k.payment_method].name if k.payment_method in pay_methods else '—' }}</td>
+        <td><span class="status st-{{ k.status }}">{{ k.status }}</span>
+          {% if k.status == 'reservado' and k.payment_method == 'transferencia' %}
+          <form method="post" action="/admin/bilhete/{{ k.pnr }}/confirmar" class="inline"><input type="hidden" name="csrf" value="{{ csrf_token() }}"><button class="btn small primary">Transferência recebida</button></form>
+          {% endif %}</td>
+      </tr>
+    {% else %}<tr><td colspan="7" class="muted">Sem bilhetes.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+  </div>
+
+  <div class="split">
+    <div>
+      <h2>Operadores por aprovar</h2>
+      {% for p in applications %}
+        <div class="card row">
+          <div><b>{{ p.company }}</b> · {{ p.city }} · {{ p.fleet_size }} autocarros<br><small class="muted">{{ p.contact_name }} · {{ p.phone }} · NUIT {{ p.nuit or '—' }}</small>{% if p.categories %}<p class="small">{{ p.categories }}</p>{% endif %}</div>
+          <form method="post" action="/admin/operador/{{ p.id }}" class="inline">
+            <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+            <button class="btn small primary" name="estado" value="aprovado">Aprovar</button>
+            <button class="btn small ghost" name="estado" value="rejeitado">Rejeitar</button>
+          </form>
+        </div>
+      {% else %}<p class="muted">Nenhum pedido pendente.</p>{% endfor %}
+    </div>
+    <div>
+      <h2>Contactos do Assistente IA</h2>
+      {% for l in leads %}
+        <div class="card"><b>{{ l.name }}</b> · <a href="https://wa.me/{{ l.phone|replace('+','') }}" target="_blank" rel="noopener">{{ l.phone }}</a><br><small class="muted">{{ l.created_at[:16]|replace('T',' ') }}</small><p>{{ l.summary }}</p></div>
+      {% else %}<p class="muted">Ainda sem contactos.</p>{% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Os meus bilhetes · {{ brand.name }}{% endblock %}
+{% block content %}
+<section class="wrap narrow section">
+  <h1>Os meus bilhetes</h1>
+  <p class="sub">Veja, partilhe ou cancele um bilhete com o código (ex.: VMK7Q2XP) e o telemóvel da compra.</p>
+  <form class="card form" method="get" action="/bilhetes">
+    <div class="row2">
+      <label class="f"><span>Código do bilhete</span><input name="pnr" required value="{{ request.args.get('pnr','') }}" placeholder="VMXXXXXX" style="text-transform:uppercase"></label>
+      <label class="f"><span>Telemóvel</span><input name="telefone" required inputmode="tel" placeholder="84 123 4567"></label>
+    </div>
+    <button class="btn primary big full" type="submit">Ver bilhete</button>
+  </form>
+  {% if mine %}
+  <h2>Neste telemóvel</h2>
+  {% for k in mine %}
+    <a class="card row ticket-row" href="/bilhete/{{ k.pnr }}">
+      <div><b>{{ k.origin }} → {{ k.destination }}</b><br><small class="muted">{{ k.travel_date }} às {{ k.depart }} · {{ k.pnr }}</small></div>
+      <span class="status st-{{ k.status }}">{{ k.status|capitalize }}</span>
+    </a>
+  {% endfor %}
+  {% endif %}
+  <p class="muted small">Procura uma reserva de aluguer de autocarro? <a href="{{ brand.sister_url }}/reserva">Consulte na AlugaMoz</a>.</p>
+</section>
+{% endblock %}

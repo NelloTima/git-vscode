@@ -1,0 +1,25 @@
+{% extends "_layout.html" %}
+{% block description %}Alugue autocarros, minibuses, Coasters, 4x4 e carros de casamento com motorista em Maputo, Beira, Nampula, Tete e todo Moçambique. Preço na hora, pague o sinal com M-Pesa ou e-Mola.{% endblock %}
+{% block logo %}<svg viewBox="0 0 40 40" width="34" height="34" aria-hidden="true"><rect width="40" height="40" rx="10" fill="#1d4e89"/><rect x="6" y="12" width="28" height="15" rx="4" fill="#f28c28"/><rect x="9" y="15" width="6" height="5" rx="1.2" fill="#1d4e89"/><rect x="17" y="15" width="6" height="5" rx="1.2" fill="#1d4e89"/><rect x="25" y="15" width="6" height="5" rx="1.2" fill="#1d4e89"/><circle cx="13" cy="29" r="3" fill="#fff"/><circle cx="27" cy="29" r="3" fill="#fff"/></svg>{% endblock %}
+{% block nav %}
+  <a href="/#categorias">Viaturas</a>
+  <a href="/#rotas">Rotas</a>
+  <a href="/empresas">Empresas</a>
+  <a href="/parceiros">Seja parceiro</a>
+  <a href="/reserva">A minha reserva</a>
+  <a href="{{ brand.sister_url }}">Bilhetes ↗</a>
+{% endblock %}
+{% block footer_cols %}
+  <div><h4>Viaturas</h4>{% for c in categories.values() %}<a href="/pesquisa?origem=Maputo&tipo=local&categoria={{ c.slug }}&passageiros={{ c.seats }}">{{ c.name }}</a>{% endfor %}</div>
+  <div><h4>Cidades</h4>{% for c in ["Maputo","Matola","Beira","Nampula","Tete","Chimoio","Quelimane","Pemba","Inhambane"] %}<a href="/pesquisa?origem={{ c }}&tipo=local&passageiros=15">Aluguer em {{ c }}</a>{% endfor %}</div>
+{% endblock %}
+{% block footer_company %}<a href="/reserva">A minha reserva</a><a href="/parceiros">Registar frota</a><a href="/empresas">Contas empresariais</a><a href="{{ brand.sister_url }}">ViajaMoz — bilhetes de autocarro</a>{% endblock %}
+{% block chat_hint %}preço em segundos{% endblock %}
+{% block chat_intro %}
+  <div class="msg bot">Olá! 👋 Diga-me para onde vai, a data e quantas pessoas são — eu calculo o preço do aluguer e mostro as viaturas disponíveis.</div>
+  <div class="chips">
+    <button type="button" class="chip">Casamento em Maputo, 60 convidados</button>
+    <button type="button" class="chip">Maputo para Bilene, 30 pessoas, ida e volta</button>
+    <button type="button" class="chip">Transfer do aeroporto para Matola</button>
+  </div>
+{% endblock %}

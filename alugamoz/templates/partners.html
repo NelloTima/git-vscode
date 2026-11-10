@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% from "_macros.html" import vehicle_art with context %}
+{% block title %}Seja parceiro · {{ brand.name }}{% endblock %}
+{% block content %}
+<section class="band green">
+  <div class="wrap split">
+    <div>
+      <span class="eyebrow">Para donos de frota e transportadoras</span>
+      <h1>Ponha as suas viaturas a trabalhar todos os dias</h1>
+      <p class="lead">Receba pedidos de casamentos, empresas, escolas e turistas em todo Moçambique. Você decide preços mínimos e disponibilidade; nós tratamos de clientes, pagamentos e apoio.</p>
+      <ul class="trust light">
+        <li>✔ Sem mensalidade — comissão só por viagem realizada</li>
+        <li>✔ Recebe por M-Pesa ou transferência em até 48h após a viagem</li>
+        <li>✔ Pedidos com sinal pago: menos clientes que desistem</li>
+        <li>✔ Painel e alertas por WhatsApp para cada nova reserva</li>
+      </ul>
+    </div>
+    <div class="art-stack">{{ vehicle_art("autocarro") }}{{ vehicle_art("minibus") }}</div>
+  </div>
+</section>
+<section class="wrap narrow section">
+  <h2>Registar a minha frota</h2>
+  <form class="card form" method="post">
+    <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+    <div class="row2">
+      <label class="f"><span>Empresa / nome comercial</span><input name="empresa" required maxlength="120"></label>
+      <label class="f"><span>NUIT</span><input name="nuit" inputmode="numeric" maxlength="20" placeholder="9 dígitos"></label>
+    </div>
+    <div class="row2">
+      <label class="f"><span>Pessoa de contacto</span><input name="contacto" required maxlength="120"></label>
+      <label class="f"><span>Telemóvel</span><input name="telefone" required inputmode="tel" placeholder="84 123 4567"></label>
+    </div>
+    <div class="row2">
+      <label class="f"><span>Email</span><input type="email" name="email"></label>
+      <label class="f"><span>Cidade base</span><input list="locs" name="cidade" required placeholder="Maputo"></label>
+    </div>
+    <datalist id="locs">{% for l in locations %}<option value="{{ l }}">{% endfor %}</datalist>
+    <label class="f"><span>Número de viaturas</span><input type="number" name="frota" min="1" max="1000" value="1"></label>
+    <fieldset class="checks"><legend>Que viaturas tem?</legend>
+      {% for c in categories.values() %}<label><input type="checkbox" name="categorias" value="{{ c.slug }}"> {{ c.name }}</label>{% endfor %}
+    </fieldset>
+    <p class="muted small">Vamos pedir: livrete, inspecção, seguro de passageiros válido e carta profissional dos motoristas.</p>
+    <button class="btn primary big full" type="submit">Enviar registo</button>
+  </form>
+</section>
+{% endblock %}

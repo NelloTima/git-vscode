@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Operadores · {{ brand.name }}{% endblock %}
+{% block content %}
+<section class="band green">
+  <div class="wrap split">
+    <div>
+      <span class="eyebrow">Para operadores de autocarros</span>
+      <h1>Venda bilhetes online e encha os seus autocarros</h1>
+      <p class="lead">Publique os seus horários e venda lugares 24 horas por dia, com pagamento M-Pesa antes do embarque.</p>
+      <ul class="trust light">
+        <li>✔ Sem mensalidade — comissão só por bilhete vendido</li>
+        <li>✔ Recebe por M-Pesa ou transferência em até 48h após a viagem</li>
+        <li>✔ Lista de passageiros pronta para a polícia e a fronteira, com embarque por QR</li>
+        <li>✔ Menos lugares vazios: clientes de todo o país vêem os seus horários</li>
+      </ul>
+    </div>
+    <div class="art-stack op-art" aria-hidden="true">🚌<small>Os seus horários, os seus preços, vendidos online.</small></div>
+  </div>
+</section>
+<section class="wrap narrow section">
+  <h2>Registar a minha empresa</h2>
+  <form class="card form" method="post">
+    <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+    <div class="row2">
+      <label class="f"><span>Empresa / nome comercial</span><input name="empresa" required maxlength="120"></label>
+      <label class="f"><span>NUIT</span><input name="nuit" inputmode="numeric" maxlength="20" placeholder="9 dígitos"></label>
+    </div>
+    <div class="row2">
+      <label class="f"><span>Pessoa de contacto</span><input name="contacto" required maxlength="120"></label>
+      <label class="f"><span>Telemóvel</span><input name="telefone" required inputmode="tel" placeholder="84 123 4567"></label>
+    </div>
+    <div class="row2">
+      <label class="f"><span>Email</span><input type="email" name="email"></label>
+      <label class="f"><span>Cidade base</span><input list="locs" name="cidade" required placeholder="Maputo"></label>
+    </div>
+    <datalist id="locs">{% for l in ["Maputo","Matola","Xai-Xai","Inhambane","Maxixe","Vilankulo","Beira","Chimoio","Tete","Quelimane","Nampula","Nacala","Pemba","Cuamba","Lichinga"] %}<option value="{{ l }}">{% endfor %}</datalist>
+    <label class="f"><span>Número de autocarros</span><input type="number" name="frota" min="1" max="1000" value="1"></label>
+    <label class="f"><span>Rotas e horários actuais</span><textarea name="rotas" rows="3" maxlength="500" placeholder="Ex.: Maputo–Beira 04:00 diário; Maputo–Inhambane 06:00 e 13:00"></textarea></label>
+    <p class="muted small">Vamos pedir: alvará de transporte, livretes, inspecção, seguro de passageiros e carta profissional dos motoristas.</p>
+    <button class="btn primary big full" type="submit">Enviar registo</button>
+  </form>
+</section>
+{% endblock %}

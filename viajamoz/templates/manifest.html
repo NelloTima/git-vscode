@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Manifesto {{ trip.origin }} → {{ trip.destination }} {{ day }}{% endblock %}
+{% block content %}
+<section class="wrap section manifest">
+  <div class="admin-head no-print">
+    <a class="back" href="/admin">← Painel</a>
+    <button class="btn ghost small" type="button" onclick="window.print()">Imprimir</button>
+  </div>
+  <h1>Lista de passageiros</h1>
+  <p><b>{{ trip.operator }}</b> · {{ trip.origin }} → {{ trip.destination }} · {{ day.strftime('%d/%m/%Y') }} às {{ trip.depart }} · {{ bc.name }}</p>
+  <p class="muted">{{ rows|length }} de {{ bc.seats }} lugares vendidos online · embarcados: {{ rows|selectattr('boarded_at')|list|length }}</p>
+
+  <form class="card row no-print" method="post" action="/admin/embarque">
+    <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+    <label class="f grow"><span>Registar embarque (código do bilhete ou leitura do QR)</span><input name="pnr" required autofocus placeholder="VMXXXXXX" style="text-transform:uppercase"></label>
+    <button class="btn primary">Embarcar</button>
+  </form>
+
+  <div class="table-wrap">
+  <table class="grid">
+    <thead><tr><th>Lugar</th><th>Passageiro</th><th>Idade</th><th>Sexo</th><th>Documento</th><th>Bilhete</th><th>Telemóvel</th><th>Embarque → Desembarque</th><th>✔</th></tr></thead>
+    <tbody>
+    {% for r in rows %}
+      <tr><td><b>{{ r.seat }}</b></td><td>{{ r.passenger }}</td><td>{{ r.age }}</td><td>{{ r.gender or '' }}</td><td>{{ r.doc or '' }}</td>
+        <td>{{ r.pnr }}</td><td>{{ r.phone }}</td><td>{{ r.boarding }} → {{ r.dropping }}</td><td>{{ '✔' if r.boarded_at }}</td></tr>
+    {% else %}<tr><td colspan="9" class="muted">Sem passageiros online para esta partida.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "_layout.html" %}
+{% block description %}Compre bilhetes de autocarro online em Moçambique: Maputo, Beira, Inhambane, Nampula, Tete, Joanesburgo. Escolha o lugar, pague com M-Pesa ou e-Mola e receba o bilhete no telemóvel.{% endblock %}
+{% block logo %}<svg viewBox="0 0 40 40" width="34" height="34" aria-hidden="true"><rect width="40" height="40" rx="10" fill="#0b6e4f"/><path d="M9 26V15a4 4 0 0 1 4-4h14a4 4 0 0 1 4 4v11z" fill="#f9c80e"/><rect x="12" y="14" width="7" height="6" rx="1.5" fill="#0b6e4f"/><rect x="21" y="14" width="7" height="6" rx="1.5" fill="#0b6e4f"/><circle cx="14" cy="28" r="3" fill="#fff"/><circle cx="26" cy="28" r="3" fill="#fff"/></svg>{% endblock %}
+{% block nav %}
+  <a href="/">Bilhetes</a>
+  <a href="/bilhetes">Os meus bilhetes</a>
+  <a href="/operadores">Operadores</a>
+  <a href="{{ brand.sister_url }}">Alugar autocarro ↗</a>
+{% endblock %}
+{% block footer_cols %}
+  <div><h4>Rotas populares</h4>{% for o, d in [("Maputo","Beira"),("Maputo","Inhambane"),("Maputo","Xai-Xai"),("Maputo","Joanesburgo (África do Sul)"),("Beira","Chimoio"),("Nampula","Pemba"),("Maputo","Tete")] %}<a href="/viagens?de={{ o|urlencode }}&para={{ d|urlencode }}&data={{ today }}">{{ o }} → {{ d.split(' (')[0] }}</a>{% endfor %}</div>
+  <div><h4>Ajuda</h4><a href="/bilhetes">Ver ou cancelar bilhete</a><a href="/#faq">Perguntas frequentes</a><a href="https://wa.me/{{ brand.whatsapp }}">Apoio por WhatsApp</a></div>
+{% endblock %}
+{% block footer_company %}<a href="/operadores">Venda bilhetes connosco</a><a href="{{ brand.sister_url }}">AlugaMoz — aluguer de autocarros</a>{% endblock %}
+{% block chat_hint %}horários e preços{% endblock %}
+{% block chat_intro %}
+  <div class="msg bot">Olá! 👋 Para onde quer viajar e quando? Eu mostro os horários, os lugares livres e os preços.</div>
+  <div class="chips">
+    <button type="button" class="chip">Autocarro de Maputo para a Beira amanhã</button>
+    <button type="button" class="chip">Qual o mais barato para Inhambane na sexta?</button>
+    <button type="button" class="chip">Nampula para Pemba no sábado</button>
+  </div>
+{% endblock %}

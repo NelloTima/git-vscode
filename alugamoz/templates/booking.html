@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% from "_macros.html" import vehicle_art with context %}
+{% block title %}Reserva {{ b.ref }} · {{ brand.name }}{% endblock %}
+{% block content %}
+<section class="wrap booking-page">
+  <div class="ticket">
+    <header>
+      <div><span class="muted">Referência</span><h1>{{ b.ref }}</h1></div>
+      <span class="status st-{{ b.status }}">{{ status_labels.get(b.status, b.status) }}</span>
+    </header>
+    <ol class="progress">
+      {% set idx = steps.index(b.status) if b.status in steps else -1 %}
+      {% for s in steps %}<li class="{{ 'done' if loop.index0 <= idx }}">{{ status_labels[s] }}</li>{% endfor %}
+    </ol>
+    {% if b.status == 'cancelada' %}<p class="flash erro">Esta reserva foi cancelada.</p>{% endif %}
+    <div class="ticket-grid">
+      <div>{{ vehicle_art(b.category) }}<p><b>{{ b.title }}</b>{% if b.vehicles > 1 %} × {{ b.vehicles }}{% endif %}</p></div>
+      <dl>
+        <dt>Cliente</dt><dd>{{ b.customer_name }} · {{ b.phone }}</dd>
+        <dt>Rota</dt><dd>{{ b.origin }}{% if b.trip_type != 'local' %} → {{ b.destination }}{% endif %} ({{ trip_types[b.trip_type] }})</dd>
+        <dt>Data</dt><dd>{{ b.start_date }}{% if b.pickup_time %} às {{ b.pickup_time }}{% endif %}{% if b.end_date %} até {{ b.end_date }}{% endif %}</dd>
+        {% if b.pickup_address %}<dt>Recolha</dt><dd>{{ b.pickup_address }}</dd>{% endif %}
+        <dt>Passageiros</dt><dd>{{ b.passengers }}{% if b.occasion %} · {{ b.occasion }}{% endif %}</dd>
+        <dt>Total</dt><dd><b>{{ mzn(b.total) }}</b></dd>
+        <dt>Sinal (30%)</dt><dd>{{ mzn(b.deposit) }} — {{ 'pago ✔' if b.payment_status in ('sinal_pago','pago_total') else 'por pagar' }}</dd>
+      </dl>
+    </div>
+    {% if b.payment_status == 'pendente' and b.status != 'cancelada' %}
+    <form class="repay" method="post" action="/reserva/{{ b.ref }}/pagar">
+      <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+      <h3>Pagar o sinal agora</h3>
+      <div class="paypick">
+      {% for k, m in pay_methods.items() if k != 'numerario' %}
+        <label class="payopt pay-{{ k }}"><input type="radio" name="pagamento" value="{{ k }}" {{ 'checked' if k == b.payment_method or (loop.first and b.payment_method not in pay_methods) }}><b>{{ m.name }}</b><small>{{ m.operator }}</small></label>
+      {% endfor %}
+      </div>
+      <label class="f"><span>Número</span><input name="telefone_pagamento" value="{{ b.phone }}" inputmode="tel"></label>
+      <button class="btn primary" type="submit">Pagar {{ mzn(b.deposit) }}</button>
+    </form>
+    {% endif %}
+    {% if pays %}<details class="paylog"><summary>Histórico de pagamentos</summary>
+      <ul>{% for x in pays %}<li>{{ x.created_at[:16]|replace('T',' ') }} · {{ pay_methods[x.method].name }} · {{ mzn(x.amount) }} · <b>{{ x.status }}</b> — {{ x.message }}</li>{% endfor %}</ul>
+    </details>{% endif %}
+    <div class="ticket-actions">
+      <a class="btn wa" target="_blank" rel="noopener" href="https://wa.me/{{ brand.whatsapp }}?text={{ ('Olá, tenho a reserva ' ~ b.ref)|urlencode }}">Falar no WhatsApp</a>
+      <a class="btn ghost" href="/">Nova pesquisa</a>
+    </div>
+    <p class="muted small">Guarde a referência <b>{{ b.ref }}</b>. Pode consultar a reserva a qualquer momento em “A minha reserva” com o seu número de telemóvel.</p>
+  </div>
+</section>
+{% endblock %}

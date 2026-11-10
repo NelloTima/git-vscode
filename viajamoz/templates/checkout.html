@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Pagamento {{ t.pnr }} · {{ brand.name }}{% endblock %}
+{% block content %}
+<section class="wrap seats-page">
+  <div class="holdbar" data-left="{{ hold_left }}">⏳ Lugares guardados por <b id="holdTimer">{{ hold_left // 60 }}:{{ "%02d"|format(hold_left % 60) }}</b></div>
+  <form method="post" class="vehicle-grid">
+    <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+    <div>
+      <h1>Dados dos passageiros</h1>
+      {% if cross %}<p class="flash">🌍 Viagem internacional: indique o número do passaporte de cada passageiro.</p>{% endif %}
+      {% for s in seats %}
+      <fieldset class="card pax">
+        <legend>Lugar {{ s.seat }}</legend>
+        <div class="row3">
+          <label class="f grow"><span>Nome completo</span><input name="nome_{{ s.seat }}" required minlength="3" maxlength="120" value="{{ form.get('nome_' ~ s.seat, '') }}" {{ 'autocomplete=name' if loop.first }}></label>
+          <label class="f"><span>Idade</span><input type="number" name="idade_{{ s.seat }}" min="1" max="119" required value="{{ form.get('idade_' ~ s.seat, '') }}"></label>
+          <label class="f"><span>Sexo</span><select name="sexo_{{ s.seat }}"><option value="">—</option><option value="F" {{ 'selected' if form.get('sexo_' ~ s.seat) == 'F' }}>F</option><option value="M" {{ 'selected' if form.get('sexo_' ~ s.seat) == 'M' }}>M</option></select></label>
+        </div>
+        <label class="f"><span>{{ 'Nº do passaporte' if cross else 'Nº do BI (opcional)' }}</span><input name="doc_{{ s.seat }}" maxlength="30" {{ 'required' if cross }} value="{{ form.get('doc_' ~ s.seat, '') }}"></label>
+      </fieldset>
+      {% endfor %}
+      <h2>Contacto</h2>
+      <div class="card">
+        <div class="row2">
+          <label class="f"><span>Telemóvel (recebe o bilhete)</span><input name="telefone" required inputmode="tel" placeholder="84 123 4567" value="{{ form.get('telefone', '') }}" autocomplete="tel"></label>
+          <label class="f"><span>Email (opcional)</span><input type="email" name="email" value="{{ form.get('email', '') }}" autocomplete="email"></label>
+        </div>
+      </div>
+    </div>
+
+    <aside class="book-card">
+      <h2>{{ trip.origin }} → {{ trip.destination }}</h2>
+      <p class="muted">{{ trip.operator }} · {{ day.strftime('%d/%m/%Y') }} às {{ trip.depart }}<br>Lugares {{ seats|map(attribute='seat')|join(', ') }}<br>Embarque: {{ t.boarding }}</p>
+      <table class="breakdown">
+        <tr><td>{{ seats|length }} lugar(es)</td><td>{{ mzn(t.fare_total) }}</td></tr>
+        <tr class="total"><td>Total (IVA incl.)</td><td id="payTotal" data-base="{{ t.fare_total }}">{{ mzn(t.fare_total) }}</td></tr>
+      </table>
+      <label class="f promo"><span>Código promocional</span><input name="promo" value="{{ form.get('promo', '') }}" placeholder="Ex.: BEMVINDO" style="text-transform:uppercase"></label>
+      <fieldset class="paypick"><legend>Pagar com</legend>
+        {% for k, m in pay_methods.items() if k != 'numerario' %}
+          <label class="payopt pay-{{ k }}"><input type="radio" name="pagamento" value="{{ k }}" {{ 'checked' if form.get('pagamento', 'mpesa') == k }}><b>{{ m.name }}</b><small>{{ m.operator }}</small></label>
+        {% endfor %}
+      </fieldset>
+      <label class="f"><span>Número para pagamento (se diferente)</span><input name="telefone_pagamento" inputmode="tel" placeholder="Usa o telemóvel de contacto"></label>
+      <button class="btn primary big full" type="submit">Pagar e emitir bilhete</button>
+      <p class="muted small">Vai receber um pedido no telemóvel para confirmar com o seu PIN.</p>
+    </aside>
+  </form>
+</section>
+{% endblock %}

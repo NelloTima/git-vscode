@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Empresas · {{ brand.name }}{% endblock %}
+{% block content %}
+<section class="band dark">
+  <div class="wrap">
+    <span class="eyebrow">Contas empresariais</span>
+    <h1>Transporte de trabalhadores e eventos corporativos, sem dores de cabeça</h1>
+    <p class="lead">Mineração em Tete, gás em Cabo Delgado, fábricas na Matola, ONGs em todo o país. Contratos mensais, factura com NUIT, relatórios de viagens e um gestor de conta dedicado.</p>
+    <a class="btn yellow big" href="https://wa.me/{{ brand.whatsapp }}?text={{ 'Olá, quero uma proposta para transporte empresarial'|urlencode }}" target="_blank" rel="noopener">Pedir proposta</a>
+  </div>
+</section>
+<section class="wrap section">
+  <div class="occ-grid">
+    <div class="occ"><span class="occ-icon">🧾</span><strong>Factura mensal</strong><span>Uma factura com NUIT por mês, pagamento a 30 dias para clientes aprovados.</span></div>
+    <div class="occ"><span class="occ-icon">🕐</span><strong>Turnos e rotas fixas</strong><span>Recolhas diárias por turno com lista de passageiros e controlo de pontualidade.</span></div>
+    <div class="occ"><span class="occ-icon">🦺</span><strong>Normas de segurança</strong><span>Viaturas com cintos, extintor, kit de primeiros socorros e motoristas formados.</span></div>
+    <div class="occ"><span class="occ-icon">📊</span><strong>Relatórios</strong><span>Viagens, quilómetros e custos por centro de custo, exportáveis para Excel.</span></div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% from "_ticket_macros.html" import ticket_search, duration with context %}
+{% block title %}Autocarros {{ origin }} → {{ dest }} · {{ day.strftime('%d/%m') }} · {{ brand.name }}{% endblock %}
+{% block content %}
+{% set wd = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'] %}
+<section class="searchbar">
+  <div class="wrap">{{ ticket_search([origin, dest], de=origin, para=dest, data=day.isoformat(), compact=True) }}</div>
+</section>
+
+<section class="wrap">
+  <div class="datestrip" role="tablist" aria-label="Escolher data">
+    {% for d in week %}
+      <a role="tab" aria-selected="{{ 'true' if d == day else 'false' }}" class="{{ 'on' if d == day }}" href="/viagens?de={{ origin|urlencode }}&para={{ dest|urlencode }}&data={{ d }}">
+        <small>{{ wd[d.weekday()] }}</small><b>{{ d.strftime('%d/%m') }}</b></a>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="wrap results-layout">
+  <aside class="summary filters-panel" id="filters">
+    <h2>Filtrar</h2>
+    <h3>Hora de partida</h3>
+    <div class="filters" data-filter="slot">
+      <label class="chip"><input type="checkbox" value="madrugada"> 🌙 Antes das 6h</label>
+      <label class="chip"><input type="checkbox" value="manha"> 🌅 6h–12h</label>
+      <label class="chip"><input type="checkbox" value="tarde"> ☀️ 12h–18h</label>
+      <label class="chip"><input type="checkbox" value="noite"> 🌆 Depois das 18h</label>
+    </div>
+    <h3>Classe</h3>
+    <div class="filters" data-filter="cls">
+      {% for slug, b in bus_classes.items() if results|selectattr('bus_class','equalto',slug)|list %}
+        <label class="chip"><input type="checkbox" value="{{ slug }}"> {{ b.name }}</label>
+      {% endfor %}
+    </div>
+    <h3>Operador</h3>
+    <div class="filters" data-filter="op">
+      {% for op in results|map(attribute='operator')|unique|sort %}
+        <label class="chip"><input type="checkbox" value="{{ op }}"> {{ op }}</label>
+      {% endfor %}
+    </div>
+  </aside>
+
+  <div class="results">
+    <div class="results-head">
+      <h1 class="results-title">{{ origin }} → {{ dest }} <small class="muted">· {{ wd[day.weekday()] }} {{ day.strftime('%d/%m/%Y') }}</small></h1>
+      {% if results %}
+      <label class="sort">Ordenar
+        <select id="sortBy">
+          <option value="depart">Partida mais cedo</option>
+          <option value="fare">Mais barato</option>
+          <option value="duration">Mais rápido</option>
+          <option value="rating">Melhor avaliado</option>
+        </select>
+      </label>
+      {% endif %}
+    </div>
+    {% if festive %}<p class="flash">🎄 Época festiva: preços com acréscimo de 15% e muita procura. Compre já.</p>{% endif %}
+    <p class="muted count" id="count">{{ results|length }} autocarro(s)</p>
+
+    <div id="tripList">
+    {% for r in results %}
+    <article class="trip" data-slot="{{ r.slot }}" data-cls="{{ r.bus_class }}" data-op="{{ r.operator }}"
+             data-depart="{{ r.depart }}" data-fare="{{ r.fare }}" data-duration="{{ r.duration_min }}" data-rating="{{ r.rating }}">
+      <div class="trip-op">
+        <h3>{{ r.operator }}</h3>
+        <p class="muted">{{ r.class_name }}</p>
+        <span class="rating {{ 'good' if r.rating >= 4.3 }}">★ {{ "%.1f"|format(r.rating) }}</span>
+      </div>
+      <div class="trip-times">
+        <div><b>{{ r.depart }}</b><small>{{ origin.split(' (')[0] }}</small></div>
+        <div class="dur"><span>{{ duration(r.duration_min) }}</span></div>
+        <div><b>{{ r.arrive }}{% if r.arrive_day_offset %}<sup>+{{ r.arrive_day_offset }}</sup>{% endif %}</b><small>{{ dest.split(' (')[0] }}</small></div>
+      </div>
+      <div class="trip-buy">
+        <span class="price">{{ mzn(r.fare) }}</span>
+        <span class="seatsleft {{ 'low' if r.seats_left <= 8 }}">{% if r.seats_left <= 0 %}Esgotado{% elif r.seats_left <= 8 %}Só {{ r.seats_left }} lugares!{% else %}{{ r.seats_left }} lugares livres{% endif %}</span>
+        {% if r.seats_left > 0 %}<a class="btn primary" href="/viagem/{{ r.id }}/{{ day }}">Escolher lugar</a>{% else %}<span class="btn ghost" aria-disabled="true">Esgotado</span>{% endif %}
+      </div>
+      <p class="amen">{% for a in r.amenities %}<span>{{ a }}</span>{% endfor %}</p>
+    </article>
+    {% endfor %}
+    </div>
+    <div class="empty" id="noMatch" hidden><h3>Nenhum autocarro com estes filtros.</h3><p>Retire alguns filtros para ver mais opções.</p></div>
+
+    {% if not results %}
+    <div class="empty">
+      <h3>Não há autocarros à venda de {{ origin }} para {{ dest }} nesta data.</h3>
+      <p>Experimente outra data acima{% if alternatives %} ou um destino com ligação a partir de {{ origin }}{% endif %}.</p>
+      {% if alternatives %}<div class="filters center-row">{% for a in alternatives %}<a class="chip" href="/viagens?de={{ origin|urlencode }}&para={{ a|urlencode }}&data={{ day }}">{{ a }}</a>{% endfor %}</div>{% endif %}
+      <p>Grupo grande? <a href="{{ brand.sister_url }}/pesquisa?origem={{ origin|urlencode }}&destino={{ dest|urlencode }}&tipo=ida&passageiros=30&data={{ day }}">Alugue um autocarro só para si na AlugaMoz →</a></p>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

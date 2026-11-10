@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% from "_ticket_macros.html" import duration with context %}
+{% block title %}Escolher lugar · {{ trip.origin }} → {{ trip.destination }} · {{ brand.name }}{% endblock %}
+{% block content %}
+<section class="wrap seats-page">
+  <a class="back" href="/viagens?de={{ trip.origin|urlencode }}&para={{ trip.destination|urlencode }}&data={{ day }}">← Outros autocarros</a>
+  <header class="trip-banner">
+    <div><h1>{{ trip.operator }}</h1><p class="muted">{{ bc.name }} · ★ {{ "%.1f"|format(trip.rating) }}</p></div>
+    <div class="trip-times">
+      <div><b>{{ trip.depart }}</b><small>{{ trip.origin }} · {{ day.strftime('%d/%m') }}</small></div>
+      <div class="dur"><span>{{ duration(trip.duration_min) }}</span></div>
+      <div><b>{{ arrive.strftime('%H:%M') }}</b><small>{{ trip.destination }} · {{ arrive.strftime('%d/%m') }}</small></div>
+    </div>
+  </header>
+
+  <form method="post" class="seat-grid" id="seatForm" data-fare="{{ fare }}" data-max="{{ max_seats }}">
+    <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+    <div class="bus-wrap">
+      <div class="legend">
+        <span><i class="s free"></i>Livre</span><span><i class="s sel"></i>Seleccionado</span><span><i class="s taken"></i>Ocupado</span>
+      </div>
+      <div class="bus" role="group" aria-label="Mapa de lugares">
+        <div class="bus-front"><span class="wheel" title="Motorista">◎</span><span>Frente</span></div>
+        {% for row in bc.layout %}
+        <div class="bus-row" style="--cols: {{ row|length }}">
+          {% for s in row %}
+            {% if s is none %}<span class="aisle"></span>
+            {% else %}
+              {% set busy = s in taken %}
+              <label class="seat {{ 'taken' if busy }}" title="Lugar {{ s }}{{ ' (ocupado)' if busy }}">
+                <input type="checkbox" name="lugar" value="{{ s }}" {{ 'disabled' if busy }} aria-label="Lugar {{ s }}{{ ' ocupado' if busy }}">
+                <span>{{ s }}</span>
+              </label>
+            {% endif %}
+          {% endfor %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <aside class="book-card">
+      <h2>A sua escolha</h2>
+      <p class="muted" id="seatList">Toque nos lugares livres (máx. {{ max_seats }}).</p>
+      <label class="f"><span>Ponto de embarque · {{ trip.origin }}</span>
+        <select name="embarque" required>{% for p in boarding %}<option>{{ p }}</option>{% endfor %}</select></label>
+      <label class="f"><span>Ponto de desembarque · {{ trip.destination }}</span>
+        <select name="desembarque" required>{% for p in dropping %}<option>{{ p }}</option>{% endfor %}</select></label>
+      <div class="price-live"><span><span id="nSeats">0</span> × {{ mzn(fare) }}</span><span class="price" id="seatTotal">{{ mzn(0) }}</span></div>
+      <button class="btn primary big full" type="submit" id="seatSubmit" disabled>Continuar</button>
+      <p class="muted small">Os lugares ficam guardados 10 minutos enquanto paga. Embarque 30 minutos antes da partida.</p>
+      <details class="small"><summary>Comodidades</summary><p>{{ bc.amenities|replace(',', ' · ') }}</p></details>
+    </aside>
+  </form>
+</section>
+{% endblock %}

@@ -1,0 +1,79 @@
+{# Original side-view vehicle illustrations, coloured per category. #}
+{% macro vehicle_art(cat, cls="art") -%}
+{%- set colors = {"executivo":"#1f3b57","suv":"#0b6e4f","pickup":"#8a4b21","minibus":"#f2f2ee","coaster":"#f9c80e","autocarro":"#0b6e4f","luxo":"#111111"} -%}
+{%- set c = colors.get(cat, "#0b6e4f") -%}
+<svg class="{{ cls }}" viewBox="0 0 220 110" role="img" aria-label="{{ categories[cat].name if cat in categories else cat }}">
+  <ellipse cx="110" cy="98" rx="96" ry="6" fill="currentColor" opacity=".08"/>
+  {% if cat in ("autocarro", "coaster") %}
+    {% set w = 196 if cat == "autocarro" else 160 %}{% set x0 = 12 if cat == "autocarro" else 30 %}
+    <rect x="{{ x0 }}" y="22" width="{{ w }}" height="62" rx="12" fill="{{ c }}"/>
+    <rect x="{{ x0 }}" y="70" width="{{ w }}" height="8" fill="#000" opacity=".12"/>
+    {% for i in range(6 if cat == "autocarro" else 4) %}
+      <rect x="{{ x0 + 10 + i*30 }}" y="32" width="24" height="22" rx="4" fill="#cfe8f7"/>
+    {% endfor %}
+    <rect x="{{ x0 + w - 18 }}" y="30" width="14" height="40" rx="3" fill="#cfe8f7"/>
+    <rect x="{{ x0 }}" y="58" width="{{ w }}" height="5" fill="#e4572e"/>
+    <circle cx="{{ x0 + 34 }}" cy="86" r="12" fill="#222"/><circle cx="{{ x0 + 34 }}" cy="86" r="5" fill="#bbb"/>
+    <circle cx="{{ x0 + w - 34 }}" cy="86" r="12" fill="#222"/><circle cx="{{ x0 + w - 34 }}" cy="86" r="5" fill="#bbb"/>
+  {% elif cat == "minibus" %}
+    <path d="M30 80 V40 Q30 26 44 26 H150 Q166 26 176 42 L192 62 Q196 66 196 72 V80 Z" fill="{{ c }}" stroke="#c9c9c0"/>
+    <rect x="30" y="58" width="166" height="6" fill="#f9c80e"/>
+    {% for i in range(4) %}<rect x="{{ 40 + i*30 }}" y="34" width="24" height="18" rx="3" fill="#2d4a63"/>{% endfor %}
+    <path d="M160 34 H170 L184 54 H160 Z" fill="#2d4a63"/>
+    <circle cx="62" cy="84" r="12" fill="#222"/><circle cx="62" cy="84" r="5" fill="#bbb"/>
+    <circle cx="164" cy="84" r="12" fill="#222"/><circle cx="164" cy="84" r="5" fill="#bbb"/>
+  {% elif cat == "pickup" %}
+    <path d="M22 80 V58 H100 V36 Q102 30 110 30 H150 Q158 30 164 38 L178 56 Q198 58 200 66 V80 Z" fill="{{ c }}"/>
+    <path d="M112 36 H146 Q152 36 156 42 L166 56 H112 Z" fill="#cfe8f7"/>
+    <rect x="22" y="56" width="80" height="4" fill="#000" opacity=".2"/>
+    <circle cx="58" cy="84" r="13" fill="#222"/><circle cx="58" cy="84" r="5" fill="#bbb"/>
+    <circle cx="168" cy="84" r="13" fill="#222"/><circle cx="168" cy="84" r="5" fill="#bbb"/>
+  {% elif cat == "suv" %}
+    <path d="M24 80 V52 Q24 30 44 30 H140 Q154 30 162 40 L176 56 Q198 58 200 68 V80 Z" fill="{{ c }}"/>
+    <rect x="44" y="24" width="90" height="5" rx="2" fill="#333"/>
+    <path d="M42 38 H92 V56 H36 Z" fill="#cfe8f7"/><path d="M98 38 H140 Q148 38 152 44 L160 56 H98 Z" fill="#cfe8f7"/>
+    <circle cx="62" cy="84" r="13" fill="#222"/><circle cx="62" cy="84" r="5" fill="#bbb"/>
+    <circle cx="164" cy="84" r="13" fill="#222"/><circle cx="164" cy="84" r="5" fill="#bbb"/>
+  {% else %}
+    <path d="M18 80 V64 Q18 56 30 54 L64 50 L86 34 Q92 30 100 30 H140 Q150 30 158 38 L172 52 Q200 54 202 66 V80 Z" fill="{{ c }}"/>
+    <path d="M70 52 L90 38 H118 V52 Z" fill="#cfe8f7"/><path d="M124 38 H140 Q146 38 152 44 L160 52 H124 Z" fill="#cfe8f7"/>
+    {% if cat == "luxo" %}
+      <path d="M100 30 Q110 14 124 30" stroke="#f2f2ee" stroke-width="3" fill="none"/>
+      <circle cx="104" cy="22" r="5" fill="#ff8fab"/><circle cx="116" cy="20" r="5" fill="#ffffff"/><circle cx="124" cy="26" r="4" fill="#ff8fab"/>
+      <path d="M30 66 H190" stroke="#f9c80e" stroke-width="2"/>
+    {% endif %}
+    <circle cx="56" cy="84" r="12" fill="#222"/><circle cx="56" cy="84" r="5" fill="#bbb"/>
+    <circle cx="170" cy="84" r="12" fill="#222"/><circle cx="170" cy="84" r="5" fill="#bbb"/>
+  {% endif %}
+</svg>
+{%- endmacro %}
+
+{% macro stars(r) -%}
+<span class="stars" aria-label="{{ r }} de 5">★ {{ "%.1f"|format(r) }}</span>
+{%- endmacro %}
+
+{% macro search_form(p=None, compact=False) -%}
+<form class="search {{ 'compact' if compact }}" action="/pesquisa" method="get" id="searchForm">
+  <div class="tabs" role="radiogroup" aria-label="Tipo de viagem">
+    {% for k, label in trip_types.items() %}
+      <label class="tab"><input type="radio" name="tipo" value="{{ k }}" {{ 'checked' if (p and p.tipo == k) or (not p and k == 'ida_volta') }}><span>{{ label }}</span></label>
+    {% endfor %}
+  </div>
+  <div class="fields">
+    <label class="f"><span>De onde</span>
+      <input list="locs" name="origem" required value="{{ p.origin if p else 'Maputo' }}" placeholder="Cidade de partida" autocomplete="off"></label>
+    <label class="f dest"><span>Para onde</span>
+      <input list="locs" name="destino" value="{{ p.destination if p and p.destination else '' }}" placeholder="Destino" autocomplete="off"></label>
+    <label class="f hours"><span>Horas</span>
+      <input type="number" name="horas" min="4" max="72" value="{{ p.hours if p else 8 }}"></label>
+    <label class="f"><span>Data de partida</span>
+      <input type="date" name="data" min="{{ today }}" value="{{ p.start.isoformat() if p else '' }}"></label>
+    <label class="f ret"><span>Regresso</span>
+      <input type="date" name="data_fim" min="{{ today }}" value="{{ p.end.isoformat() if p and p.end else '' }}"></label>
+    <label class="f small"><span>Passageiros</span>
+      <input type="number" name="passageiros" min="1" max="500" value="{{ p.pax if p else 15 }}" required></label>
+    <button class="btn primary big" type="submit">Ver preços</button>
+  </div>
+  <datalist id="locs">{% for l in locations %}<option value="{{ l }}">{% endfor %}</datalist>
+</form>
+{%- endmacro %}
